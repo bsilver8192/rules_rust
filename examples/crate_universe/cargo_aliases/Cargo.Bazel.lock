@@ -1,5 +1,5 @@
 {
-  "checksum": "1499ae4a3cc1ab853e55732687cfdb542b67d4c50122588abdf647d599655f26",
+  "checksum": "8d9a5cc23514a53d1bbc21bdebf5efcb7e42241805dcd2eacf71796cf22d5a5d",
   "crates": {
     "aho-corasick 0.7.18": {
       "name": "aho-corasick",
@@ -2585,7 +2585,9 @@
       "aarch64-linux-android",
       "aarch64-unknown-linux-gnu",
       "arm-unknown-linux-gnueabi",
+      "arm-unknown-linux-gnueabihf",
       "armv7-unknown-linux-gnueabi",
+      "armv7-unknown-linux-gnueabihf",
       "i686-apple-darwin",
       "i686-linux-android",
       "i686-unknown-freebsd",
