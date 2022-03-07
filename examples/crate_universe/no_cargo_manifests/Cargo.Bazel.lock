@@ -1,5 +1,5 @@
 {
-  "checksum": "cf633ac36cd7b2f456745308d16ec8f611cdbfd011aaf9f60f401d1863142dd8",
+  "checksum": "5c8bd4f7527784376a1667a00ecf8f9ddd398a2a3ccefee5201b383f56d2c99b",
   "crates": {
     "ansi_term 0.12.1": {
       "name": "ansi_term",
@@ -260,7 +260,7 @@
               "target": "tower"
             },
             {
-              "id": "tower-http 0.2.3",
+              "id": "tower-http 0.2.4",
               "target": "tower_http"
             },
             {
@@ -511,7 +511,7 @@
               "target": "tower"
             },
             {
-              "id": "tower-http 0.2.3",
+              "id": "tower-http 0.2.4",
               "target": "tower_http"
             },
             {
@@ -3669,13 +3669,13 @@
       },
       "license": "MIT"
     },
-    "tower-http 0.2.3": {
+    "tower-http 0.2.4": {
       "name": "tower-http",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "repository": {
         "Http": {
-          "url": "https://crates.io/api/v1/crates/tower-http/0.2.3/download",
-          "sha256": "2bb284cac1883d54083a0edbdc9cabf931dfed87455f8c7266c01ece6394a43a"
+          "url": "https://crates.io/api/v1/crates/tower-http/0.2.4/download",
+          "sha256": "90c125fdea84614a4368fd35786b51d0682ab8d42705e061e92f0b955dea40fb"
         }
       },
       "targets": [
@@ -3759,7 +3759,7 @@
           "selects": {}
         },
         "edition": "2018",
-        "version": "0.2.3"
+        "version": "0.2.4"
       },
       "license": "MIT"
     },
