@@ -196,20 +196,20 @@ def _make_libstd_and_allocator_ccinfo(ctx, rust_std, allocator_library):
             order = "topological",
         )
 
-        link_inputs = cc_common.create_linker_input(
+        link_inputs = [depset([cc_common.create_linker_input(
             owner = rust_std.label,
             libraries = std_inputs,
-        )
+        )])]
 
-        allocator_inputs = None
+        allocator_inputs = []
         if allocator_library:
-            allocator_inputs = [allocator_library[CcInfo].linking_context.linker_inputs]
+            allocator_inputs = allocator_library[CcInfo].linking_context.linker_inputs.to_list()
 
         cc_infos.append(CcInfo(
             linking_context = cc_common.create_linking_context(
                 linker_inputs = depset(
-                    [link_inputs],
-                    transitive = allocator_inputs,
+                    allocator_inputs,
+                    transitive = link_inputs,
                     order = "topological",
                 ),
             ),

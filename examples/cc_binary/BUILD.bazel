@@ -1,0 +1,27 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
+load("@rules_rust//rust:defs.bzl", "rust_library")
+
+rust_library(
+    name = "dep",
+    srcs = ["dep.rs"],
+)
+
+# Try building as a test, which uses shared libraries.
+cc_test(
+    name = "test",
+    srcs = ["bin.cc"],
+    deps = [":dep"],
+)
+
+# Try building as a binary, which links everything statically.
+cc_binary(
+    name = "bin",
+    srcs = ["bin.cc"],
+    deps = [":dep"],
+)
+
+cc_library(
+    name = "forward_allocator",
+    srcs = ["forward_allocator.c"],
+    visibility = ["//visibility:public"],
+)

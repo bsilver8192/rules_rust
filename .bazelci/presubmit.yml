@@ -345,6 +345,44 @@ tasks:
       - "-//vendor_remote_pkgs/..."
       - "-//extra_workspace_members/..."
       - "-//no_cargo_manifests/..."
+  cc_binary_examples_ubuntu2004:
+    name: cc_binary Examples
+    platform: ubuntu2004
+    working_directory: examples/cc_binary
+    build_targets:
+      - "//..."
+    test_targets:
+      - "//..."
+  cc_binary_rbe_ubuntu1604:
+    name: cc_binary Examples
+    platform: rbe_ubuntu1604
+    working_directory: examples/cc_binary
+    shell_commands:
+      - sed -i 's/^# load("@bazelci_rules/load("@bazelci_rules/' WORKSPACE.bazel
+      - sed -i 's/^# rbe_preconfig/rbe_preconfig/' WORKSPACE.bazel
+    build_targets:
+      - "//..."
+    test_targets:
+      - "//..."
+  cc_binary_examples_macos:
+    name: cc_binary Examples
+    platform: macos
+    working_directory: examples/cc_binary
+    build_targets:
+      - "//..."
+    test_targets:
+      - "//..."
+  cc_binary_examples_windows:
+    name: cc_binary Examples
+    platform: windows
+    working_directory: examples/cc_binary
+    batch_commands:
+      - echo startup --windows_enable_symlinks >> user.bazelrc
+      - echo build --enable_runfiles >> user.bazelrc  # this is not enabled by default on windows and is necessary for the cargo build scripts
+    build_targets:
+      - "//..."
+    test_targets:
+      - "//..."
 buildifier:
   version: latest
   warnings: "all"
