@@ -6,8 +6,9 @@
 //
 // It is intended to be used in rust_toolchain.allocator_library.
 //
-// https://github.com/rust-lang/rust/blob/master/library/alloc/src/alloc.rs is
-// the best source of docs I've found on these functions.
+// https://github.com/rust-lang/rust/blob/master/library/alloc/src/alloc.rs
+// and https://github.com/rust-lang/rust/blob/master/library/std/src/alloc.rs
+// are the best source of docs I've found on these functions and variables.
 // https://doc.rust-lang.org/std/alloc/index.html talks about how this is
 // intended to be used.
 //
@@ -17,6 +18,9 @@
 //
 // This file strongly assumes that the default allocator is used. It will
 // not work with any other allocated switched in via `#[global_allocator]`.
+
+// New feature as of https://github.com/rust-lang/rust/pull/88098.
+uint8_t __rust_alloc_error_handler_should_panic = 0;
 
 uint8_t *__rdl_alloc(uintptr_t size, uintptr_t align);
 uint8_t *__rust_alloc(uintptr_t size, uintptr_t align) {
