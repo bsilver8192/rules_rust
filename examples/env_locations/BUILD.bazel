@@ -16,6 +16,7 @@ _data = [
     # we should also be able to access external binaries
     # such as protoc.
     "@com_google_protobuf//:protoc",
+    "@com_google_protobuf//:well_known_protos",
 ]
 
 cargo_build_script(
@@ -26,6 +27,8 @@ cargo_build_script(
         "SOME_TOOL": "$(execpath @com_google_protobuf//:protoc)",
         # both execpath and location should work
         "SOURCE_FILE": "$(execpath source.file)",
+        "SOME_TOOL_PLURAL_SINGLE": "$(execpaths @com_google_protobuf//:protoc)",
+        "SOME_FILES_PLURAL": "$(execpaths @com_google_protobuf//:well_known_protos)",
     },
     data = _data,
 )
@@ -42,6 +45,8 @@ rust_test(
         "GENERATED_DATA_ROOT": "$(rootpath generated.data)",
         "SOME_TOOL": "$(rootpath @com_google_protobuf//:protoc)",
         "SOURCE_FILE": "$(rootpath source.file)",
+        "SOME_TOOL_PLURAL_SINGLE": "$(execpaths @com_google_protobuf//:protoc)",
+        "SOME_FILES_PLURAL": "$(execpaths @com_google_protobuf//:well_known_protos)",
     },
     deps = [
         ":build",

@@ -9,4 +9,11 @@ fn test() {
     assert_eq!(generated_data, generated_data2);
     // and we should be able to read (and thus execute) our tool
     assert!(!std::fs::read(env!("SOME_TOOL")).unwrap().is_empty());
+    assert!(!std::fs::read(env!("SOME_TOOL_PLURAL_SINGLE"))
+        .unwrap()
+        .is_empty());
+    // multiple source files at once should also be readable
+    for source_file in env!("SOME_FILES_PLURAL").split(' ') {
+        assert!(!std::fs::read_to_string(source_file).unwrap().is_empty());
+    }
 }
