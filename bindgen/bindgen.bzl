@@ -21,6 +21,9 @@ load("//rust/private:rustc.bzl", "get_linker_and_args")
 # buildifier: disable=bzl-visibility
 load("//rust/private:utils.bzl", "find_cc_toolchain", "find_toolchain", "get_preferred_artifact")
 
+# buildifier: disable=bzl-visibility
+load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "ACTION_NAMES")
+
 # TODO(hlopko): use the more robust logic from rustc.bzl also here, through a reasonable API.
 def _get_libs_for_static_executable(dep):
     """find the libraries used for linking a static executable.
@@ -82,6 +85,26 @@ def rust_bindgen_library(
         **kwargs
     )
 
+def _cc_toolchain_flags(ctx, cc_toolchain, feature_configuration):
+    cc_lib = ctx.attr.cc_lib
+    compile_variables = cc_common.create_compile_variables(
+        feature_configuration = feature_configuration,
+        cc_toolchain = cc_toolchain,
+        user_compile_flags = ctx.fragments.cpp.copts + ctx.fragments.cpp.cxxopts,
+        preprocessor_defines = depset(transitive = [cc_lib[CcInfo].compilation_context.defines]),
+    )
+    command_line = cc_common.get_memory_inefficient_command_line(
+        feature_configuration = feature_configuration,
+        action_name = ACTION_NAMES.c_compile,
+        variables = compile_variables,
+    )
+    env = cc_common.get_environment_variables(
+        feature_configuration = feature_configuration,
+        action_name = ACTION_NAMES.c_compile,
+        variables = compile_variables,
+    )
+    return (command_line, env)
+
 def _rust_bindgen_impl(ctx):
     rust_toolchain = find_toolchain(ctx)
 
@@ -107,6 +130,8 @@ def _rust_bindgen_impl(ctx):
 
     # libclang should only have 1 output file
     libclang_dir = _get_libs_for_static_executable(libclang).to_list()[0].dirname
+    cc_toolchain, feature_configuration = find_cc_toolchain(ctx)
+    command_line, env = _cc_toolchain_flags(ctx, cc_toolchain, feature_configuration)
     include_directories = cc_lib[CcInfo].compilation_context.includes.to_list()
     quote_include_directories = cc_lib[CcInfo].compilation_context.quote_includes.to_list()
     system_include_directories = cc_lib[CcInfo].compilation_context.system_includes.to_list()
@@ -121,18 +146,22 @@ def _rust_bindgen_impl(ctx):
     args.add_all(bindgen_args)
     args.add(header.path)
     args.add("--output", unformatted_output.path)
+    args.add("--no-include-path-detection")
     args.add("--")
+    args.add("-x")
+    args.add("c")
+    args.add_all(command_line)
     args.add_all(include_directories, before_each = "-I")
     args.add_all(quote_include_directories, before_each = "-iquote")
     args.add_all(system_include_directories, before_each = "-isystem")
     args.add_all(clang_args)
 
-    env = {
-        "CLANG_PATH": clang_bin.path,
-        "LIBCLANG_PATH": libclang_dir,
-        "RUST_BACKTRACE": "1",
-    }
-    cc_toolchain, feature_configuration = find_cc_toolchain(ctx)
+    env = dict(env)
+    env.update(
+        CLANG_PATH = clang_bin.path,
+        LIBCLANG_PATH = libclang_dir,
+        RUST_BACKTRACE = "1",
+    )
     _, _, linker_env = get_linker_and_args(ctx, ctx.attr, cc_toolchain, feature_configuration, None)
     env.update(**linker_env)
 
@@ -149,6 +178,7 @@ def _rust_bindgen_impl(ctx):
             transitive = [
                 cc_lib[CcInfo].compilation_context.headers,
                 _get_libs_for_static_executable(libclang),
+                cc_toolchain.all_files,
             ] + ([
                 _get_libs_for_static_executable(libstdcxx),
             ] if libstdcxx else []),
