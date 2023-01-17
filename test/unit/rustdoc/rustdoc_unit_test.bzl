@@ -75,10 +75,11 @@ rustdoc_for_lib_with_proc_macro_test = analysistest.make(_rustdoc_for_lib_with_p
 rustdoc_for_bin_with_transitive_proc_macro_test = analysistest.make(_rustdoc_for_bin_with_transitive_proc_macro_test_impl)
 rustdoc_for_lib_with_cc_lib_test = analysistest.make(_rustdoc_for_lib_with_cc_lib_test_impl)
 
-def _target_maker(rule_fn, name, rustdoc_deps = [], **kwargs):
+def _target_maker(rule_fn, name, rustdoc_deps = [], crate_features = [], **kwargs):
     rule_fn(
         name = name,
         edition = "2018",
+        crate_features = crate_features,
         **kwargs
     )
 
@@ -97,6 +98,7 @@ def _target_maker(rule_fn, name, rustdoc_deps = [], **kwargs):
         name = "{}_doctest".format(name),
         crate = ":{}".format(name),
         deps = rustdoc_deps,
+        crate_features = crate_features,
     )
 
 def _define_targets():

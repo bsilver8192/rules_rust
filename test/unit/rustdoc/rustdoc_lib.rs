@@ -1,3 +1,8 @@
+//! ```
+//! #[cfg(feature = "with_proc_macro")]
+//! rustdoc_proc_macro::make_answer!();
+//! ```
+
 #[cfg(feature = "with_proc_macro")]
 use rustdoc_proc_macro::make_answer;
 
