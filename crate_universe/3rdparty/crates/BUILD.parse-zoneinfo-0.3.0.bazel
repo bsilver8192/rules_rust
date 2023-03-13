@@ -32,12 +32,13 @@ rust_library(
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
+        "crate-name=parse-zoneinfo",
         "manual",
         "noclippy",
         "norustfmt",
     ],
     version = "0.3.0",
     deps = [
-        "@cui__regex-1.7.0//:regex",
+        "@cui__regex-1.7.1//:regex",
     ],
 )
