@@ -9,6 +9,7 @@
 * [rust_test](#rust_test)
 * [rust_test_suite](#rust_test_suite)
 * [error_format](#error_format)
+* [panic_style](#panic_style)
 * [extra_rustc_flag](#extra_rustc_flag)
 * [extra_rustc_flags](#extra_rustc_flags)
 * [capture_clippy_output](#capture_clippy_output)
@@ -83,6 +84,24 @@ Add additional rustc_flags from the command line with `--@rules_rust//:extra_rus
 | Name  | Description | Type | Mandatory | Default |
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="extra_rustc_flags-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
+
+
+<a id="panic_style"></a>
+
+## panic_style
+
+<pre>
+panic_style(<a href="#panic_style-name">name</a>)
+</pre>
+
+Change the [-Cpanic](https://doc.rust-lang.org/rustc/codegen-options/index.html#panic) flag from the command line with `--@rules_rust//:panic_style`. See rustc documentation for valid values. Automatically reset to `unwind` for proc macros and tests.
+
+**ATTRIBUTES**
+
+
+| Name  | Description | Type | Mandatory | Default |
+| :------------- | :------------- | :------------- | :------------- | :------------- |
+| <a id="panic_style-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
 
 
 <a id="rust_binary"></a>
