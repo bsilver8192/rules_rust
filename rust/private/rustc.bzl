@@ -1045,7 +1045,7 @@ def _get_libstd_and_allocator_ccinfo(ctx, toolchain):
     if panic_style == "unwind":
         return toolchain.unwind_libstd_and_allocator_ccinfo
     elif panic_style == "abort":
-        return toolchain.panic_libstd_and_allocator_ccinfo
+        return toolchain.abort_libstd_and_allocator_ccinfo
     else:
         fail("Unrecognized panic style: " + panic_style)
 

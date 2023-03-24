@@ -184,7 +184,6 @@ def _make_libstd_and_allocator_ccinfo(ctx, rust_std, allocator_library, panic):
         filtered_between_core_and_std_files = rust_stdlib_info.between_core_and_std_files
         if panic == "abort":
             panic_filter = "panic_unwind"
-            pass
         elif panic == "unwind":
             panic_filter = "panic_abort"
         else:
@@ -566,7 +565,7 @@ def _rust_toolchain_impl(ctx):
         env = ctx.attr.env,
         exec_triple = exec_triple,
         unwind_libstd_and_allocator_ccinfo = _make_libstd_and_allocator_ccinfo(ctx, rust_std, ctx.attr.allocator_library, "unwind"),
-        panic_libstd_and_allocator_ccinfo = _make_libstd_and_allocator_ccinfo(ctx, rust_std, ctx.attr.allocator_library, "abort"),
+        abort_libstd_and_allocator_ccinfo = _make_libstd_and_allocator_ccinfo(ctx, rust_std, ctx.attr.allocator_library, "abort"),
         llvm_cov = ctx.file.llvm_cov,
         llvm_profdata = ctx.file.llvm_profdata,
         make_variables = make_variable_info,
