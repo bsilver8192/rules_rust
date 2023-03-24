@@ -208,7 +208,7 @@ A rule defining an incompatible flag.
 panic_style(<a href="#panic_style-name">name</a>)
 </pre>
 
-Change the [-Cpanic](https://doc.rust-lang.org/rustc/codegen-options/index.html#panic) flag from the command line with `--@rules_rust//:panic_style`. See rustc documentation for valid values. Automatically reset to `unwind` for proc macros and tests.
+Change the [-Cpanic](https://doc.rust-lang.org/rustc/codegen-options/index.html#panic) flag from the command line with `--@rules_rust//:panic_style`. See rustc documentation for valid values. Automatically set to `unwind` for proc macros and tests, or the per-target default.
 
 **ATTRIBUTES**
 
