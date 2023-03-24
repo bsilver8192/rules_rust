@@ -26,6 +26,7 @@ load(
     "determine_output_hash",
     "expand_dict_value_locations",
     "find_toolchain",
+    "force_panic_unwind_transition",
     "get_import_macro_deps",
     "transform_deps",
 )
@@ -1128,15 +1129,6 @@ rust_library_without_process_wrapper = rule(
     incompatible_use_toolchain_transition = True,
 )
 
-def _force_panic_unwind_transition_impl(settings, attr):
-    return {"//:panic_style": "unwind"}
-
-_force_panic_unwind_transition = transition(
-    implementation = _force_panic_unwind_transition_impl,
-    inputs = [],
-    outputs = ["//:panic_style"],
-)
-
 rust_test = rule(
     implementation = _rust_test_impl,
     provides = _common_providers,
@@ -1154,7 +1146,7 @@ rust_test = rule(
         str(Label("//rust:toolchain_type")),
         "@bazel_tools//tools/cpp:toolchain_type",
     ],
-    cfg = _force_panic_unwind_transition,
+    cfg = force_panic_unwind_transition,
     incompatible_use_toolchain_transition = True,
     doc = dedent("""\
         Builds a Rust test crate.

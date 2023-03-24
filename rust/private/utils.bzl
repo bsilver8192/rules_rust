@@ -724,3 +724,12 @@ def _shortest_src_with_basename(srcs, basename):
             if not shortest or len(f.dirname) < len(shortest.dirname):
                 shortest = f
     return shortest
+
+def _force_panic_unwind_transition_impl(settings, attr):
+    return {"//:panic_style": "unwind"}
+
+force_panic_unwind_transition = transition(
+    implementation = _force_panic_unwind_transition_impl,
+    inputs = [],
+    outputs = ["//:panic_style"],
+)
