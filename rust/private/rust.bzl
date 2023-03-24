@@ -686,6 +686,9 @@ _common_attrs = {
     "_panic_style": attr.label(
         default = Label("//:panic_style"),
     ),
+    "_per_crate_rustc_flag": attr.label(
+        default = Label("//:experimental_per_crate_rustc_flag"),
+    ),
     "_process_wrapper": attr.label(
         doc = "A process wrapper for running rustc on all platforms.",
         default = Label("//util/process_wrapper"),

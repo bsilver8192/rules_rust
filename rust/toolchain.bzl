@@ -580,6 +580,7 @@ def _rust_toolchain_impl(ctx):
         stdlib_linkflags = stdlib_linkflags_cc_info,
         extra_rustc_flags = ctx.attr.extra_rustc_flags,
         extra_exec_rustc_flags = ctx.attr.extra_exec_rustc_flags,
+        per_crate_rustc_flags = ctx.attr.per_crate_rustc_flags,
         sysroot = sysroot_path,
         sysroot_short_path = sysroot_short_path,
         target_arch = target_arch,
@@ -681,6 +682,9 @@ rust_toolchain = rule(
         ),
         "os": attr.string(
             doc = "The operating system for the current toolchain",
+        ),
+        "per_crate_rustc_flags": attr.string_list(
+            doc = "Extra flags to pass to rustc in non-exec configuration",
         ),
         "rust_doc": attr.label(
             doc = "The location of the `rustdoc` binary. Can be a direct source or a filegroup containing one item.",
