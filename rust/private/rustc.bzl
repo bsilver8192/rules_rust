@@ -613,7 +613,7 @@ def collect_inputs(
         force_depend_on_objects (bool, optional): Forces dependencies of this rule to be objects rather than
             metadata, even for libraries. This is used in rustdoc tests.
         experimental_use_cc_common_link (bool, optional): Whether rules_rust uses cc_common.link to link
-        rust binaries.
+            rust binaries.
 
     Returns:
         tuple: A tuple: A tuple of the following items:
@@ -1044,7 +1044,7 @@ def _get_libstd_and_allocator_ccinfo(ctx, toolchain):
     panic_style = _get_panic_style(ctx)
     if panic_style == "unwind":
         return toolchain.unwind_libstd_and_allocator_ccinfo
-    elif panic_style == "panic":
+    elif panic_style == "abort":
         return toolchain.panic_libstd_and_allocator_ccinfo
     else:
         fail("Unrecognized panic style: " + panic_style)

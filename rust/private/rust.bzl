@@ -1129,7 +1129,6 @@ rust_library_without_process_wrapper = rule(
 )
 
 def _force_panic_unwind_transition_impl(settings, attr):
-    _ignore = (settings, attr)
     return {"//:panic_style": "unwind"}
 
 _force_panic_unwind_transition = transition(

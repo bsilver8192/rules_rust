@@ -21,7 +21,7 @@ def _mangle_path(path):
         return path
     components = path.split("/")
     components[1] = "<OUTDIR>"
-    "/".join(components)
+    return "/".join(components)
 
 def _rust_toolchain_make_variable_expansion_test_common_impl(ctx, mnemonic):
     env = analysistest.begin(ctx)

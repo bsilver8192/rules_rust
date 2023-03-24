@@ -128,6 +128,7 @@ def _make_libstd_and_allocator_ccinfo(ctx, rust_std, allocator_library, panic):
         ctx (ctx): The rule's context object.
         rust_std: The Rust standard library.
         allocator_library: The target to use for providing allocator functions.
+        panic: Either "unwind" or "abort" to selection which panic implementation to include.
 
 
     Returns:
@@ -565,7 +566,7 @@ def _rust_toolchain_impl(ctx):
         env = ctx.attr.env,
         exec_triple = exec_triple,
         unwind_libstd_and_allocator_ccinfo = _make_libstd_and_allocator_ccinfo(ctx, rust_std, ctx.attr.allocator_library, "unwind"),
-        abort_libstd_and_allocator_ccinfo = _make_libstd_and_allocator_ccinfo(ctx, rust_std, ctx.attr.allocator_library, "abort"),
+        panic_libstd_and_allocator_ccinfo = _make_libstd_and_allocator_ccinfo(ctx, rust_std, ctx.attr.allocator_library, "abort"),
         llvm_cov = ctx.file.llvm_cov,
         llvm_profdata = ctx.file.llvm_profdata,
         make_variables = make_variable_info,
