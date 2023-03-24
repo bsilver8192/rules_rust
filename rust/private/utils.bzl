@@ -725,7 +725,7 @@ def _shortest_src_with_basename(srcs, basename):
                 shortest = f
     return shortest
 
-def _force_panic_unwind_transition_impl(settings, attr):
+def _force_panic_unwind_transition_impl(_settings, _attr):
     return {"//:panic_style": "unwind"}
 
 force_panic_unwind_transition = transition(
