@@ -21,7 +21,7 @@ error_format(
 # This setting may be changed from the command line to panic immediately upon abort.
 panic_style(
     name = "panic_style",
-    build_setting_default = "unwind",
+    build_setting_default = "",
     visibility = ["//visibility:public"],
 )
 

@@ -53,7 +53,7 @@ ErrorFormatInfo = provider(
     fields = {"error_format": "(string) [" + ", ".join(_error_format_values) + "]"},
 )
 
-_panic_style_values = ["unwind", "abort"]
+_panic_style_values = ["unwind", "abort", ""]
 
 PanicStyleInfo = provider(
     doc = "Set the panic style",
@@ -891,7 +891,7 @@ def construct_arguments(
 
     rustc_flags.add("--error-format=" + error_format)
 
-    rustc_flags.add("-Cpanic=" + _get_panic_style(ctx))
+    rustc_flags.add("-Cpanic=" + _get_panic_style(ctx, toolchain))
 
     # Mangle symbols to disambiguate crates with the same name. This could
     # happen only for non-final artifacts where we compute an output_hash,
@@ -1038,19 +1038,23 @@ def construct_arguments(
 
     return args, env
 
-def _get_panic_style(ctx):
-    # Hard-code this because I can't figure out how perform the "exec" transition + change unwind
-    # styles for proc macros. Proc macros indicate errors by panicking, which need to unwind to be
-    # reported properly.
-    if is_exec_configuration(ctx):
-        return "unwind"
+def _get_panic_style(ctx, toolchain):
     panic_style = "unwind"
+
+    # Most targets default to unwind, but a few default to abort. Can't find a list in the
+    # documentation, this list is extracted from `library/panic_unwind/src/lib.rs` as of 1.68.1.
+    target_triple = toolchain.target_triple
+    if target_triple.arch.startswith("wasm") or target_triple.arch == "avr" or target_triple.system in ("none", "uefi", "espidf"):
+        panic_style = "abort"
+
     if hasattr(ctx.attr, "_panic_style"):
-        panic_style = ctx.attr._panic_style[PanicStyleInfo].panic_style
+        flag_value = ctx.attr._panic_style[PanicStyleInfo].panic_style
+        if flag_value:
+            panic_style = flag_value
     return panic_style
 
 def _get_libstd_and_allocator_ccinfo(ctx, toolchain):
-    panic_style = _get_panic_style(ctx)
+    panic_style = _get_panic_style(ctx, toolchain)
     if panic_style == "unwind":
         return toolchain.unwind_libstd_and_allocator_ccinfo
     elif panic_style == "abort":
@@ -1959,7 +1963,7 @@ panic_style = rule(
     doc = (
         "Change the [-Cpanic](https://doc.rust-lang.org/rustc/codegen-options/index.html#panic) " +
         "flag from the command line with `--@rules_rust//:panic_style`. See rustc documentation for valid values. " +
-        "Automatically reset to `unwind` for proc macros and tests."
+        "Automatically set to `unwind` for proc macros and tests, or the per-target default."
     ),
     implementation = _panic_style_impl,
     build_setting = config.string(flag = True),

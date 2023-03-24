@@ -914,6 +914,7 @@ _proc_macro_dep_transition = transition(
 rust_proc_macro = rule(
     implementation = _rust_proc_macro_impl,
     provides = _common_providers,
+    cfg = force_panic_unwind_transition,
     # Start by copying the common attributes, then override the `deps` attribute
     # to apply `_proc_macro_dep_transition`. To add this transition we additionally
     # need to declare `_allowlist_function_transition`, see
