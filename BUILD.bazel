@@ -1,5 +1,5 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("//rust:defs.bzl", "capture_clippy_output", "clippy_flags", "error_format", "extra_exec_rustc_flag", "extra_exec_rustc_flags", "extra_rustc_flag", "extra_rustc_flags", "is_proc_macro_dep", "is_proc_macro_dep_enabled")
+load("//rust:defs.bzl", "capture_clippy_output", "clippy_flags", "error_format", "extra_exec_rustc_flag", "extra_exec_rustc_flags", "extra_rustc_flag", "extra_rustc_flags", "is_proc_macro_dep", "is_proc_macro_dep_enabled", "panic_style")
 
 exports_files(["LICENSE"])
 
@@ -15,6 +15,13 @@ bzl_library(
 error_format(
     name = "error_format",
     build_setting_default = "human",
+    visibility = ["//visibility:public"],
+)
+
+# This setting may be changed from the command line to panic immediately upon abort.
+panic_style(
+    name = "panic_style",
+    build_setting_default = "unwind",
     visibility = ["//visibility:public"],
 )
 

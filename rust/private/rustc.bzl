@@ -53,6 +53,13 @@ ErrorFormatInfo = provider(
     fields = {"error_format": "(string) [" + ", ".join(_error_format_values) + "]"},
 )
 
+_panic_style_values = ["unwind", "abort"]
+
+PanicStyleInfo = provider(
+    doc = "Set the panic style",
+    fields = {"panic_style": "(string) [" + ", ".join(_panic_style_values) + "]"},
+)
+
 ExtraRustcFlagsInfo = provider(
     doc = "Pass each value as an additional flag to non-exec rustc invocations",
     fields = {"extra_rustc_flags": "List[string] Extra flags to pass to rustc in non-exec configuration"},
@@ -606,7 +613,7 @@ def collect_inputs(
         force_depend_on_objects (bool, optional): Forces dependencies of this rule to be objects rather than
             metadata, even for libraries. This is used in rustdoc tests.
         experimental_use_cc_common_link (bool, optional): Whether rules_rust uses cc_common.link to link
-	    rust binaries.
+        rust binaries.
 
     Returns:
         tuple: A tuple: A tuple of the following items:
@@ -879,6 +886,8 @@ def construct_arguments(
 
     rustc_flags.add("--error-format=" + error_format)
 
+    rustc_flags.add("-Cpanic=" + _get_panic_style(ctx))
+
     # Mangle symbols to disambiguate crates with the same name. This could
     # happen only for non-final artifacts where we compute an output_hash,
     # e.g., rust_library.
@@ -1019,6 +1028,26 @@ def construct_arguments(
     )
 
     return args, env
+
+def _get_panic_style(ctx):
+    # Hard-code this because I can't figure out how perform the "exec" transition + change unwind
+    # styles for proc macros. Proc macros indicate errors by panicking, which need to unwind to be
+    # reported properly.
+    if is_exec_configuration(ctx):
+        return "unwind"
+    panic_style = "unwind"
+    if hasattr(ctx.attr, "_panic_style"):
+        panic_style = ctx.attr._panic_style[PanicStyleInfo].panic_style
+    return panic_style
+
+def _get_libstd_and_allocator_ccinfo(ctx, toolchain):
+    panic_style = _get_panic_style(ctx)
+    if panic_style == "unwind":
+        return toolchain.unwind_libstd_and_allocator_ccinfo
+    elif panic_style == "panic":
+        return toolchain.panic_libstd_and_allocator_ccinfo
+    else:
+        fail("Unrecognized panic style: " + panic_style)
 
 def rustc_compile_action(
         ctx,
@@ -1258,7 +1287,7 @@ def rustc_compile_action(
         )
 
         # Collect the linking contexts of the standard library and dependencies.
-        linking_contexts = [toolchain.libstd_and_allocator_ccinfo.linking_context, toolchain.stdlib_linkflags.linking_context]
+        linking_contexts = [_get_libstd_and_allocator_ccinfo(ctx, toolchain).linking_context, toolchain.stdlib_linkflags.linking_context]
 
         for dep in crate_info.deps.to_list():
             if dep.cc_info:
@@ -1477,9 +1506,10 @@ def establish_cc_info(ctx, attr, crate_info, toolchain, cc_toolchain, feature_co
             else:
                 cc_infos.append(dep.cc_info)
 
-    if crate_info.type in ("rlib", "lib") and toolchain.libstd_and_allocator_ccinfo:
+    libstd_and_allocator_ccinfo = _get_libstd_and_allocator_ccinfo(ctx, toolchain)
+    if crate_info.type in ("rlib", "lib") and libstd_and_allocator_ccinfo:
         # TODO: if we already have an rlib in our deps, we could skip this
-        cc_infos.append(toolchain.libstd_and_allocator_ccinfo)
+        cc_infos.append(libstd_and_allocator_ccinfo)
 
     return [cc_common.merge_cc_infos(cc_infos = cc_infos)]
 
@@ -1869,6 +1899,34 @@ error_format = rule(
         "flag from the command line with `--@rules_rust//:error_format`. See rustc documentation for valid values."
     ),
     implementation = _error_format_impl,
+    build_setting = config.string(flag = True),
+)
+
+def _panic_style_impl(ctx):
+    """Implementation of the `panic_style` rule
+
+    Args:
+        ctx (ctx): The rule's context object
+
+    Returns:
+        list: A list containing the PanicStyleInfo provider
+    """
+    raw = ctx.build_setting_value
+    if raw not in _panic_style_values:
+        fail("{} expected a value in `{}` but got `{}`".format(
+            ctx.label,
+            _panic_style_values,
+            raw,
+        ))
+    return [PanicStyleInfo(panic_style = raw)]
+
+panic_style = rule(
+    doc = (
+        "Change the [-Cpanic](https://doc.rust-lang.org/rustc/codegen-options/index.html#panic) " +
+        "flag from the command line with `--@rules_rust//:panic_style`. See rustc documentation for valid values. " +
+        "Automatically reset to `unwind` for proc macros and tests."
+    ),
+    implementation = _panic_style_impl,
     build_setting = config.string(flag = True),
 )
 

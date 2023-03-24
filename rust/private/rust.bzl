@@ -682,6 +682,9 @@ _common_attrs = {
     "_is_proc_macro_dep_enabled": attr.label(
         default = Label("//:is_proc_macro_dep_enabled"),
     ),
+    "_panic_style": attr.label(
+        default = Label("//:panic_style"),
+    ),
     "_process_wrapper": attr.label(
         doc = "A process wrapper for running rustc on all platforms.",
         default = Label("//util/process_wrapper"),
@@ -1125,11 +1128,25 @@ rust_library_without_process_wrapper = rule(
     incompatible_use_toolchain_transition = True,
 )
 
+def _force_panic_unwind_transition_impl(settings, attr):
+    _ignore = (settings, attr)
+    return {"//:panic_style": "unwind"}
+
+_force_panic_unwind_transition = transition(
+    implementation = _force_panic_unwind_transition_impl,
+    inputs = [],
+    outputs = ["//:panic_style"],
+)
+
 rust_test = rule(
     implementation = _rust_test_impl,
     provides = _common_providers,
     attrs = dict(_common_attrs.items() +
-                 _rust_test_attrs.items()),
+                 _rust_test_attrs.items() + {
+        "_allowlist_function_transition": attr.label(
+            default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
+        ),
+    }.items()),
     executable = True,
     fragments = ["cpp"],
     host_fragments = ["cpp"],
@@ -1138,6 +1155,7 @@ rust_test = rule(
         str(Label("//rust:toolchain_type")),
         "@bazel_tools//tools/cpp:toolchain_type",
     ],
+    cfg = _force_panic_unwind_transition,
     incompatible_use_toolchain_transition = True,
     doc = dedent("""\
         Builds a Rust test crate.

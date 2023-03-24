@@ -121,7 +121,7 @@ def _ltl(library, ctx, cc_toolchain, feature_configuration):
         pic_static_library = library,
     )
 
-def _make_libstd_and_allocator_ccinfo(ctx, rust_std, allocator_library):
+def _make_libstd_and_allocator_ccinfo(ctx, rust_std, allocator_library, panic):
     """Make the CcInfo (if possible) for libstd and allocator libraries.
 
     Args:
@@ -179,20 +179,21 @@ def _make_libstd_and_allocator_ccinfo(ctx, rust_std, allocator_library):
 
         # The libraries panic_abort and panic_unwind are alternatives.
         # The std by default requires panic_unwind.
-        # Exclude panic_abort if panic_unwind is present.
-        # TODO: Provide a setting to choose between panic_abort and panic_unwind.
+        # Exclude panic_abort if panic_unwind is present, and vice versa.
         filtered_between_core_and_std_files = rust_stdlib_info.between_core_and_std_files
-        has_panic_unwind = [
+        if panic == "abort":
+            panic_filter = "panic_unwind"
+            pass
+        elif panic == "unwind":
+            panic_filter = "panic_abort"
+        else:
+            fail("Unrecognized panic style: %s" % panic)
+        filtered_between_core_and_std_files = [
             f
             for f in filtered_between_core_and_std_files
-            if "panic_unwind" in f.basename
+            if panic_filter not in f.basename
         ]
-        if has_panic_unwind:
-            filtered_between_core_and_std_files = [
-                f
-                for f in filtered_between_core_and_std_files
-                if "panic_abort" not in f.basename
-            ]
+
         memchr_inputs = depset(
             [
                 _ltl(f, ctx, cc_toolchain, feature_configuration)
@@ -563,7 +564,8 @@ def _rust_toolchain_impl(ctx):
         dylib_ext = ctx.attr.dylib_ext,
         env = ctx.attr.env,
         exec_triple = exec_triple,
-        libstd_and_allocator_ccinfo = _make_libstd_and_allocator_ccinfo(ctx, rust_std, ctx.attr.allocator_library),
+        unwind_libstd_and_allocator_ccinfo = _make_libstd_and_allocator_ccinfo(ctx, rust_std, ctx.attr.allocator_library, "unwind"),
+        abort_libstd_and_allocator_ccinfo = _make_libstd_and_allocator_ccinfo(ctx, rust_std, ctx.attr.allocator_library, "abort"),
         llvm_cov = ctx.file.llvm_cov,
         llvm_profdata = ctx.file.llvm_profdata,
         make_variables = make_variable_info,

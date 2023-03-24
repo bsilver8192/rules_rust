@@ -51,6 +51,7 @@ load(
     _error_format = "error_format",
     _extra_rustc_flag = "extra_rustc_flag",
     _extra_rustc_flags = "extra_rustc_flags",
+    _panic_style = "panic_style",
     _rust_analyzer_aspect = "rust_analyzer_aspect",
     _rust_binary = "rust_binary",
     _rust_clippy = "rust_clippy",
@@ -175,6 +176,7 @@ rustfmt_test = _rustfmt_test
 rustfmt_toolchain = _rustfmt_toolchain
 
 error_format = _error_format
+panic_style = _panic_style
 extra_rustc_flag = _extra_rustc_flag
 extra_rustc_flags = _extra_rustc_flags
 incompatible_flag = _incompatible_flag
