@@ -135,7 +135,7 @@ def _make_libstd_and_allocator_ccinfo(ctx, rust_std, allocator_library, std, pan
         rust_std: The Rust standard library.
         allocator_library: The target to use for providing allocator functions.
         std: Standard library flavor. Currently only "std" and "no_std_with_alloc" are supported.
-        panic: Either "unwind" or "abort" to selection which panic implementation to include.
+        panic: Either "unwind" or "abort" to select which panic implementation to include.
 
 
     Returns:
