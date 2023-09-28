@@ -13,7 +13,6 @@
 * [extra_rustc_flags](#extra_rustc_flags)
 * [fail_when_enabled](#fail_when_enabled)
 * [incompatible_flag](#incompatible_flag)
-* [panic_style](#panic_style)
 * [rules_rust_dependencies](#rules_rust_dependencies)
 * [rust_analyzer_aspect](#rust_analyzer_aspect)
 * [rust_analyzer_toolchain](#rust_analyzer_toolchain)
@@ -204,24 +203,6 @@ A rule defining an incompatible flag.
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="incompatible_flag-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
 | <a id="incompatible_flag-issue"></a>issue |  The link to the github issue associated with this flag   | String | required |  |
-
-
-<a id="panic_style"></a>
-
-## panic_style
-
-<pre>
-panic_style(<a href="#panic_style-name">name</a>)
-</pre>
-
-Change the [-Cpanic](https://doc.rust-lang.org/rustc/codegen-options/index.html#panic) flag from the command line with `--@rules_rust//:panic_style`. See rustc documentation for valid values. Automatically set to `unwind` for proc macros and tests, or the per-target default.
-
-**ATTRIBUTES**
-
-
-| Name  | Description | Type | Mandatory | Default |
-| :------------- | :------------- | :------------- | :------------- | :------------- |
-| <a id="panic_style-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
 
 
 <a id="rust_analyzer_toolchain"></a>
