@@ -58,11 +58,6 @@ ErrorFormatInfo = provider(
 
 _panic_style_values = ["unwind", "abort", ""]
 
-PanicStyleInfo = provider(
-    doc = "Set the panic style",
-    fields = {"panic_style": "(string) [" + ", ".join(_panic_style_values) + "]"},
-)
-
 ExtraRustcFlagsInfo = provider(
     doc = "Pass each value as an additional flag to non-exec rustc invocations",
     fields = {"extra_rustc_flags": "List[string] Extra flags to pass to rustc in non-exec configuration"},
@@ -1151,7 +1146,7 @@ def _get_panic_style(ctx, toolchain):
         panic_style = "abort"
 
     if hasattr(ctx.attr, "_panic_style"):
-        flag_value = ctx.attr._panic_style[PanicStyleInfo].panic_style
+        flag_value = ctx.attr._panic_style[BuildSettingInfo].value
         if flag_value:
             panic_style = flag_value
     return panic_style
@@ -2111,34 +2106,6 @@ error_format = rule(
         "flag from the command line with `--@rules_rust//:error_format`. See rustc documentation for valid values."
     ),
     implementation = _error_format_impl,
-    build_setting = config.string(flag = True),
-)
-
-def _panic_style_impl(ctx):
-    """Implementation of the `panic_style` rule
-
-    Args:
-        ctx (ctx): The rule's context object
-
-    Returns:
-        list: A list containing the PanicStyleInfo provider
-    """
-    raw = ctx.build_setting_value
-    if raw not in _panic_style_values:
-        fail("{} expected a value in `{}` but got `{}`".format(
-            ctx.label,
-            _panic_style_values,
-            raw,
-        ))
-    return [PanicStyleInfo(panic_style = raw)]
-
-panic_style = rule(
-    doc = (
-        "Change the [-Cpanic](https://doc.rust-lang.org/rustc/codegen-options/index.html#panic) " +
-        "flag from the command line with `--@rules_rust//:panic_style`. See rustc documentation for valid values. " +
-        "Automatically set to `unwind` for proc macros and tests, or the per-target default."
-    ),
-    implementation = _panic_style_impl,
     build_setting = config.string(flag = True),
 )
 

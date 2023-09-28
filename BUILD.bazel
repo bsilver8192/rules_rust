@@ -12,7 +12,6 @@ load(
     "is_proc_macro_dep",
     "is_proc_macro_dep_enabled",
     "no_std",
-    "panic_style",
     "per_crate_rustc_flag",
 )
 
@@ -34,9 +33,14 @@ error_format(
 )
 
 # This setting may be changed from the command line to panic immediately upon abort.
-panic_style(
+string_flag(
     name = "panic_style",
     build_setting_default = "",
+    values = [
+        "abort",
+        "unwind",
+        "",
+    ],
     visibility = ["//visibility:public"],
 )
 
