@@ -569,10 +569,30 @@ tasks:
     test_flags:
       - "--@rules_rust//rust/toolchain/channel=nightly"
       - "--@rules_rust//:no_std=alloc"
-  cc_common_link_with_global_alloc_panic_abort_ubuntu2004:
+  cc_common_link_panic_abort_ubuntu2004:
     name: Build via cc_common.link and -Cabort=panic
     platform: ubuntu2004
     working_directory: test/cc_common_link
+    build_targets:
+      - "--"
+      - "//..."
+      # The with_global_alloc directory is a repository on its own tested in the 'Build via cc_common.link using a global allocator' task.
+      - "-//with_global_alloc/..."
+    test_targets:
+      - "--"
+      - "//..."
+      # The with_global_alloc directory is a repository on its own tested in the 'Build via cc_common.link using a global allocator' task.
+      - "-//with_global_alloc/..."
+    build_flags:
+      - "--@rules_rust//rust/settings:experimental_use_cc_common_link=True"
+      - "--@rules_rust//:panic_style=abort"
+    test_flags:
+      - "--@rules_rust//rust/settings:experimental_use_cc_common_link=True"
+      - "--@rules_rust//:panic_style=abort"
+  cc_common_link_with_global_alloc_panic_abort_ubuntu2004:
+    name: Build via cc_common.link using a global allocator and -Cabort=panic
+    platform: ubuntu2004
+    working_directory: test/cc_common_link/with_global_alloc
     build_targets:
       - "//..."
     test_targets:
