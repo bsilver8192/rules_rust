@@ -1084,13 +1084,70 @@ def construct_arguments(
 
     return args, env
 
+# Most targets default to unwind, but a few default to abort. Can't find a list in the
+# documentation, this list is extracted from rust 1.72.1 via this command:
+#   for f in $(git grep -l PanicStrategy::Abort compiler/rustc_target/src/spec | fgrep -v mod.rs)
+#     do grep -E "\<$(basename -s .rs $f)\>" compiler/rustc_target/src/spec/mod.rs
+#   done
+_DEFAULT_PANIC_TRIPLES = [
+    "aarch64-nintendo-switch-freestanding",
+    "aarch64-unknown-none",
+    "aarch64-unknown-none-softfloat",
+    "armebv7r-none-eabi",
+    "armebv7r-none-eabihf",
+    "armv4t-none-eabi",
+    "armv7a-none-eabi",
+    "armv7a-none-eabihf",
+    "armv7r-none-eabi",
+    "armv7r-none-eabihf",
+    "loongarch64-unknown-none",
+    "loongarch64-unknown-none-softfloat",
+    "mipsel-sony-psx",
+    "mipsel-unknown-none",
+    "msp430-none-elf",
+    "nvptx64-nvidia-cuda",
+    "riscv32i-unknown-none-elf",
+    "riscv32im-unknown-none-elf",
+    "riscv32imac-esp-espidf",
+    "riscv32imac-unknown-none-elf",
+    "riscv32imac-unknown-xous-elf",
+    "riscv32imc-esp-espidf",
+    "riscv32imc-unknown-none-elf",
+    "riscv64gc-unknown-none-elf",
+    "riscv64imac-unknown-none-elf",
+    "thumbv4t-none-eabi",
+    "thumbv7a-pc-windows-msvc",
+    "thumbv7a-uwp-windows-msvc",
+    "x86_64-unknown-l4re-uclibc",
+    "x86_64-unknown-none",
+    "bpfeb-unknown-none",
+    "bpfel-unknown-none",
+    "aarch64-unknown-hermit",
+    "x86_64-unknown-hermit",
+    "x86_64-unknown-l4re-uclibc",
+    "armv5te-none-eabi",
+    "thumbv4t-none-eabi",
+    "thumbv5te-none-eabi",
+    "thumbv6m-none-eabi",
+    "thumbv7em-none-eabi",
+    "thumbv7em-none-eabihf",
+    "thumbv7m-none-eabi",
+    "thumbv8m.base-none-eabi",
+    "thumbv8m.main-none-eabi",
+    "aarch64-unknown-uefi",
+    "i686-unknown-uefi",
+    "x86_64-unknown-uefi",
+    "wasm32-unknown-emscripten",
+    "wasm32-unknown-unknown",
+    "wasm32-wasi",
+    "wasm64-unknown-unknown",
+]
+
 def _get_panic_style(ctx, toolchain):
     panic_style = "unwind"
 
-    # Most targets default to unwind, but a few default to abort. Can't find a list in the
-    # documentation, this list is extracted from `library/panic_unwind/src/lib.rs` as of 1.68.1.
     target_triple = toolchain.target_triple
-    if target_triple.arch.startswith("wasm") or target_triple.arch == "avr" or target_triple.system in ("none", "uefi", "espidf"):
+    if target_triple.str in _DEFAULT_PANIC_TRIPLES:
         panic_style = "abort"
 
     if hasattr(ctx.attr, "_panic_style"):
@@ -1098,8 +1155,6 @@ def _get_panic_style(ctx, toolchain):
         if flag_value:
             panic_style = flag_value
     return panic_style
-
-def _get_libstd_and_allocator_ccinfo(ctx, toolchain):
 
 def rustc_compile_action(
         ctx,
@@ -1478,27 +1533,25 @@ def _get_std_and_alloc_info(ctx, toolchain, crate_info):
 
     if is_exec_configuration(ctx):
         if panic_style == "unwind":
-            all_ccinfos = toolchain.libstd_and_allocator_unwind_ccinfo
+            return toolchain.libstd_and_allocator_unwind_ccinfo
         else:
-            all_ccinfos = toolchain.libstd_and_allocator_abort_ccinfo
+            return toolchain.libstd_and_allocator_abort_ccinfo
     if toolchain._experimental_use_global_allocator:
         if _is_no_std(ctx, toolchain, crate_info):
             if panic_style == "unwind":
-                all_ccinfos = toolchain.nostd_and_global_allocator_unwind_ccinfo
+                return toolchain.nostd_and_global_allocator_unwind_ccinfo
             else:
-                all_ccinfos = toolchain.nostd_and_global_allocator_abort_ccinfo
+                return toolchain.nostd_and_global_allocator_abort_ccinfo
         else:
             if panic_style == "unwind":
-                all_ccinfos = toolchain.libstd_and_global_allocator_unwind_ccinfo
+                return toolchain.libstd_and_global_allocator_unwind_ccinfo
             else:
-                all_ccinfos = toolchain.libstd_and_global_allocator_abort_ccinfo
+                return toolchain.libstd_and_global_allocator_abort_ccinfo
     else:
         if panic_style == "unwind":
-            all_ccinfos = toolchain.libstd_and_allocator_unwind_ccinfo
+            return toolchain.libstd_and_allocator_unwind_ccinfo
         else:
-            all_ccinfos = toolchain.libstd_and_allocator_abort_ccinfo
-
-    ccinfo = all_ccinfos.get(panic_style)
+            return toolchain.libstd_and_allocator_abort_ccinfo
 
 def _is_dylib(dep):
     return not bool(dep.static_library or dep.pic_static_library)
