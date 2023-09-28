@@ -1542,16 +1542,14 @@ def _get_std_and_alloc_info(ctx, toolchain, crate_info):
                 return toolchain.nostd_and_global_allocator_unwind_ccinfo
             else:
                 return toolchain.nostd_and_global_allocator_abort_ccinfo
+        elif panic_style == "unwind":
+            return toolchain.libstd_and_global_allocator_unwind_ccinfo
         else:
-            if panic_style == "unwind":
-                return toolchain.libstd_and_global_allocator_unwind_ccinfo
-            else:
-                return toolchain.libstd_and_global_allocator_abort_ccinfo
+            return toolchain.libstd_and_global_allocator_abort_ccinfo
+    elif panic_style == "unwind":
+        return toolchain.libstd_and_allocator_unwind_ccinfo
     else:
-        if panic_style == "unwind":
-            return toolchain.libstd_and_allocator_unwind_ccinfo
-        else:
-            return toolchain.libstd_and_allocator_abort_ccinfo
+        return toolchain.libstd_and_allocator_abort_ccinfo
 
 def _is_dylib(dep):
     return not bool(dep.static_library or dep.pic_static_library)
