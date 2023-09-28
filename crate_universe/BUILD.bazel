@@ -50,7 +50,7 @@ rust_library(
         include = ["src/**"],
         exclude = ["src/**/*.rs"],
     ),
-    edition = "2018",
+    edition = "2021",
     proc_macro_deps = all_crate_deps(proc_macro = True),
     # This target embeds additional, stamping related information (see
     # https://docs.bazel.build/versions/main/user-manual.html#workspace_status
@@ -65,7 +65,7 @@ rust_library(
 rust_binary(
     name = "cargo_bazel_bin",
     srcs = ["src/main.rs"],
-    edition = "2018",
+    edition = "2021",
     version = VERSION,
     visibility = ["//visibility:public"],
     deps = [":cargo_bazel"],
@@ -82,9 +82,9 @@ rust_test(
     aliases = aliases(),
     crate = ":cargo_bazel",
     data = glob(["test_data/**"]) + [
+        "//crate_universe/test_data/serialized_configs",
         "@rules_rust//rust/toolchain:current_cargo_files",
         "@rules_rust//rust/toolchain:current_rustc_files",
-        "//crate_universe/test_data/serialized_configs",
     ],
     proc_macro_deps = all_crate_deps(
         proc_macro_dev = True,
@@ -107,11 +107,11 @@ rust_test(
     srcs = ["tests/cargo_integration_test.rs"],
     aliases = aliases(),
     data = glob(["test_data/**"]) + [
+        "//crate_universe/test_data/serialized_configs",
         "@rules_rust//rust/toolchain:current_cargo_files",
         "@rules_rust//rust/toolchain:current_rustc_files",
-        "//crate_universe/test_data/serialized_configs",
     ],
-    edition = "2018",
+    edition = "2021",
     env = {
         "CARGO": "$(rootpath @rules_rust//rust/toolchain:current_cargo_files)",
         "RUSTC": "$(rootpath @rules_rust//rust/toolchain:current_rustc_files)",
@@ -129,6 +129,20 @@ rust_test(
     ] + all_crate_deps(
         normal = True,
     ),
+)
+
+rust_test(
+    name = "versions_test",
+    srcs = ["tests/version_test.rs"],
+    data = [
+        "Cargo.toml",
+        "version.bzl",
+    ],
+    edition = "2021",
+    rustc_env = {
+        "CARGO_TOML": "$(rootpath :Cargo.toml)",
+        "VERSION_BZL": "$(rootpath :version.bzl)",
+    },
 )
 
 rust_doc(

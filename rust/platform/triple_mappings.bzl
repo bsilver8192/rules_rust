@@ -36,12 +36,15 @@ SUPPORTED_T2_PLATFORM_TRIPLES = [
     "riscv32imc-unknown-none-elf",
     "riscv64gc-unknown-none-elf",
     "s390x-unknown-linux-gnu",
+    "thumbv7em-none-eabi",
+    "thumbv8m.main-none-eabi",
     "wasm32-unknown-unknown",
     "wasm32-wasi",
     "x86_64-apple-ios",
     "x86_64-fuchsia",
     "x86_64-linux-android",
     "x86_64-unknown-freebsd",
+    "x86_64-unknown-none",
 ]
 
 SUPPORTED_PLATFORM_TRIPLES = SUPPORTED_T1_PLATFORM_TRIPLES + SUPPORTED_T2_PLATFORM_TRIPLES
@@ -71,6 +74,7 @@ _CPU_ARCH_TO_BUILTIN_PLAT_SUFFIX = {
     "thumbv6m": "armv6-m",
     "thumbv7em": "armv7e-m",
     "thumbv7m": "armv7-m",
+    "thumbv8m.main": "armv8-m",
     "wasm32": None,
     "x86_64": "x86_64",
 }

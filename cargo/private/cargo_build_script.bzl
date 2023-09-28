@@ -1,18 +1,19 @@
 """Rules for Cargo build scripts (`build.rs` files)"""
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "CPP_COMPILE_ACTION_NAME", "C_COMPILE_ACTION_NAME")
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
+load("//cargo:features.bzl", "SYMLINK_EXEC_ROOT_FEATURE")
 load("//rust:defs.bzl", "rust_common")
+load("//rust:rust_common.bzl", "BuildInfo", "DepInfo")
 
 # buildifier: disable=bzl-visibility
-load("//rust/private:providers.bzl", _DepInfo = "DepInfo")
-
-# buildifier: disable=bzl-visibility
-load("//rust/private:rustc.bzl", "BuildInfo", "get_compilation_mode_opts", "get_linker_and_args")
+load("//rust/private:rustc.bzl", "get_compilation_mode_opts", "get_linker_and_args")
 
 # buildifier: disable=bzl-visibility
 load("//rust/private:utils.bzl", "dedent", "expand_dict_value_locations", "find_cc_toolchain", "find_toolchain", _name_to_crate_name = "name_to_crate_name")
+load(":features.bzl", "feature_enabled")
 
 # Reexport for cargo_build_script_wrapper.bzl
 name_to_crate_name = _name_to_crate_name
@@ -187,6 +188,9 @@ def _cargo_build_script_impl(ctx):
             if type(all_files) == "list":
                 all_files = depset(all_files)
             toolchain_tools.append(all_files)
+        if platform_common.TemplateVariableInfo in target:
+            variables = getattr(target[platform_common.TemplateVariableInfo], "variables", depset([]))
+            env.update(variables)
 
     _merge_env_dict(env, expand_dict_value_locations(
         ctx,
@@ -212,26 +216,36 @@ def _cargo_build_script_impl(ctx):
     # See https://doc.rust-lang.org/cargo/reference/build-scripts.html#-sys-packages
     # for details.
     args = ctx.actions.args()
-    args.add_all([
-        script.path,
-        links,
-        out_dir.path,
-        env_out.path,
-        flags_out.path,
-        link_flags.path,
-        link_search_paths.path,
-        dep_env_out.path,
-        streams.stdout.path,
-        streams.stderr.path,
-    ])
+    args.add(script)
+    args.add(links)
+    args.add(out_dir.path)
+    args.add(env_out)
+    args.add(flags_out)
+    args.add(link_flags)
+    args.add(link_search_paths)
+    args.add(dep_env_out)
+    args.add(streams.stdout)
+    args.add(streams.stderr)
+    args.add(ctx.attr.rundir)
+
     build_script_inputs = []
-    for dep in ctx.attr.deps:
+    for dep in ctx.attr.link_deps:
         if rust_common.dep_info in dep and dep[rust_common.dep_info].dep_env:
             dep_env_file = dep[rust_common.dep_info].dep_env
             args.add(dep_env_file.path)
             build_script_inputs.append(dep_env_file)
             for dep_build_info in dep[rust_common.dep_info].transitive_build_infos.to_list():
                 build_script_inputs.append(dep_build_info.out_dir)
+
+    for dep in ctx.attr.deps:
+        for dep_build_info in dep[rust_common.dep_info].transitive_build_infos.to_list():
+            build_script_inputs.append(dep_build_info.out_dir)
+
+    experimental_symlink_execroot = ctx.attr._experimental_symlink_execroot[BuildSettingInfo].value or \
+                                    feature_enabled(ctx, SYMLINK_EXEC_ROOT_FEATURE)
+
+    if experimental_symlink_execroot:
+        env["RULES_RUST_SYMLINK_EXEC_ROOT"] = "1"
 
     ctx.actions.run(
         executable = ctx.executable._cargo_build_script_runner,
@@ -277,12 +291,30 @@ cargo_build_script = rule(
             allow_files = True,
         ),
         "deps": attr.label_list(
-            doc = "The Rust dependencies of the crate",
+            doc = "The Rust build-dependencies of the crate",
             providers = [rust_common.dep_info],
             cfg = "exec",
         ),
+        "link_deps": attr.label_list(
+            doc = dedent("""\
+                The subset of the Rust (normal) dependencies of the crate that
+                have the links attribute and therefore provide environment
+                variables to this build script.
+            """),
+            providers = [rust_common.dep_info],
+        ),
         "links": attr.string(
             doc = "The name of the native library this crate links against.",
+        ),
+        "rundir": attr.string(
+            default = "",
+            doc = dedent("""\
+                A directory to cd to before the cargo_build_script is run. This should be a path relative to the exec root.
+
+                The default behaviour (and the behaviour if rundir is set to the empty string) is to change to the relative path corresponding to the cargo manifest directory, which replicates the normal behaviour of cargo so it is easy to write compatible build scripts.
+
+                If set to `.`, the cargo build script will run in the exec root.
+            """),
         ),
         "rustc_flags": attr.string_list(
             doc = dedent("""\
@@ -319,6 +351,9 @@ cargo_build_script = rule(
         ),
         "_cc_toolchain": attr.label(
             default = Label("@bazel_tools//tools/cpp:current_cc_toolchain"),
+        ),
+        "_experimental_symlink_execroot": attr.label(
+            default = Label("//cargo/settings:experimental_symlink_execroot"),
         ),
     },
     fragments = ["cpp"],
@@ -401,7 +436,7 @@ def _cargo_dep_env_implementation(ctx):
         # Information here is used directly by dependencies, and it is an error to have more than
         # one dependency which sets this. This is the main way to specify information from build
         # scripts, which is what we're looking to do.
-        _DepInfo(
+        DepInfo(
             dep_env = ctx.file.src,
             direct_crates = depset(),
             link_search_path_files = depset(),

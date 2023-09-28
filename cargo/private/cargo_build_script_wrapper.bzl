@@ -13,10 +13,12 @@ def cargo_build_script(
         crate_features = [],
         version = None,
         deps = [],
+        link_deps = [],
         build_script_env = {},
         data = [],
         tools = [],
         links = None,
+        rundir = None,
         rustc_env = {},
         rustc_flags = [],
         visibility = None,
@@ -85,11 +87,18 @@ def cargo_build_script(
             being compiled, optionally with a suffix of `_build_script`.
         crate_features (list, optional): A list of features to enable for the build script.
         version (str, optional): The semantic version (semver) of the crate.
-        deps (list, optional): The dependencies of the crate.
+        deps (list, optional): The build-dependencies of the crate.
+        link_deps (list, optional): The subset of the (normal) dependencies of the crate that have the
+            links attribute and therefore provide environment variables to this build script.
         build_script_env (dict, optional): Environment variables for build scripts.
         data (list, optional): Files needed by the build script.
         tools (list, optional): Tools (executables) needed by the build script.
         links (str, optional): Name of the native library this crate links against.
+        rundir (str, optional): A directory to `cd` to before the cargo_build_script is run. This should be a path relative to the exec root.
+
+            The default behaviour (and the behaviour if rundir is set to the empty string) is to change to the relative path corresponding to the cargo manifest directory, which replicates the normal behaviour of cargo so it is easy to write compatible build scripts.
+
+            If set to `.`, the cargo build script will run in the exec root.
         rustc_env (dict, optional): Environment variables to set in rustc when compiling the build script.
         rustc_flags (list, optional): List of compiler flags passed to `rustc`.
         visibility (list of label, optional): Visibility to apply to the generated build script output.
@@ -122,6 +131,9 @@ def cargo_build_script(
     if "toolchains" in kwargs:
         build_script_kwargs["toolchains"] = kwargs["toolchains"]
 
+    if "features" in kwargs:
+        build_script_kwargs["features"] = kwargs["features"]
+
     rust_binary(
         name = name + "_",
         crate_features = crate_features,
@@ -141,8 +153,10 @@ def cargo_build_script(
         build_script_env = build_script_env,
         links = links,
         deps = deps,
+        link_deps = link_deps,
         data = data,
         tools = tools,
+        rundir = rundir,
         rustc_flags = rustc_flags,
         visibility = visibility,
         tags = tags,

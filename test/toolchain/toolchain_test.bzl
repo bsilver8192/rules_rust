@@ -121,7 +121,6 @@ def _define_targets():
         dylib_ext = ".so",
         exec_triple = "x86_64-unknown-none",
         target_triple = "x86_64-unknown-none",
-        os = "linux",
         rust_doc = ":mock_rustdoc",
         rust_std = ":std_libs",
         rustc = ":mock_rustc",
@@ -129,6 +128,7 @@ def _define_targets():
         stdlib_linkflags = [],
         extra_rustc_flags = [TOOLCHAIN_FLAG],
         extra_exec_rustc_flags = [EXEC_TOOLCHAIN_FLAG],
+        visibility = ["//visibility:public"],
     )
 
     native.toolchain(
