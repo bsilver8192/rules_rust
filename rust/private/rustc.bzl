@@ -56,8 +56,6 @@ ErrorFormatInfo = provider(
     fields = {"error_format": "(string) [" + ", ".join(_error_format_values) + "]"},
 )
 
-_panic_style_values = ["unwind", "abort", ""]
-
 ExtraRustcFlagsInfo = provider(
     doc = "Pass each value as an additional flag to non-exec rustc invocations",
     fields = {"extra_rustc_flags": "List[string] Extra flags to pass to rustc in non-exec configuration"},
